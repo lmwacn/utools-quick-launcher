@@ -1,4 +1,5 @@
 import {
+  COMMAND_PLATFORMS,
   RESOURCE_TYPES,
   type ImportResult,
   type LauncherDraft,
@@ -8,6 +9,7 @@ import {
 } from '../types/launcher'
 
 const RESOURCE_TYPE_SET = new Set<string>(RESOURCE_TYPES)
+const COMMAND_PLATFORM_SET = new Set<string>(COMMAND_PLATFORMS)
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null
@@ -39,18 +41,25 @@ export function normalizeLauncherItem(value: unknown): LauncherItem | null {
   const path = asText(record.path) || asText(record.url) || asText(record.cmd) || asText(record.command)
   const displayName = asText(record.displayName)
   const name = asText(record.name) || displayName
+  const platform = asText(record.platform)
 
   if (!path || !name) return null
 
-  return {
+  const item: LauncherItem = {
     ...record,
     id: asText(record.id) || createId(),
     type,
     path,
     name,
+    ...(type === 'cmd' && COMMAND_PLATFORM_SET.has(platform) && platform !== 'all'
+      ? { platform: platform as LauncherItem['platform'] }
+      : {}),
     ...(displayName ? { displayName } : {}),
     ...(asText(record.customIcon) ? { customIcon: asText(record.customIcon) } : {})
   }
+
+  if (type !== 'cmd' || !COMMAND_PLATFORM_SET.has(platform) || platform === 'all') delete item.platform
+  return item
 }
 
 export function migrateLauncherData(value: unknown): MigrationResult {
@@ -104,7 +113,7 @@ export function itemFromDraft(draft: LauncherDraft, original?: LauncherItem): La
     ...(draft.customIcon.trim() ? { customIcon: draft.customIcon.trim() } : {})
   }
 
-  return {
+  const item: LauncherItem = {
     ...(original ?? {}),
     id: original?.id ?? createId(),
     type: original?.type ?? draft.type,
@@ -115,6 +124,11 @@ export function itemFromDraft(draft: LauncherDraft, original?: LauncherItem): La
     ...(!draft.displayName.trim() && original?.displayName ? { displayName: undefined } : {}),
     ...(!draft.customIcon.trim() && original?.customIcon ? { customIcon: undefined } : {})
   }
+
+  if (item.type === 'cmd' && draft.platform && draft.platform !== 'all') item.platform = draft.platform
+  else delete item.platform
+
+  return item
 }
 
 export function mergeImportedItems(current: LauncherItem[], input: unknown): ImportResult {

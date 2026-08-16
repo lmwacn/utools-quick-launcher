@@ -9,7 +9,7 @@ export default function HelpDialog({ onClose }: { onClose: () => void }) {
         <section><b>拖放添加</b><p>将文件或文件夹直接拖入窗口，支持一次添加多个资源。</p></section>
         <section><b>排序与管理</b><p>在“全部”且未搜索时拖动卡片排序；卡片右上角可编辑或删除。</p></section>
         <section><b>安全备份</b><p>导出的 JSON 与旧版格式兼容，重装前建议导出备份。</p></section>
-        <section><b>命令说明</b><p>命令会使用当前系统默认 Shell 执行，请仅保存你信任的命令。</p></section>
+        <section><b>跨平台命令</b><p>macOS 使用 zsh、Windows 使用 CMD、Linux 优先使用 Bash；可限制命令只在指定系统显示和运行。</p></section>
       </div>
       <footer className="modal-actions"><button className="button button--primary" type="button" onClick={onClose}>我知道了</button></footer>
     </Modal>

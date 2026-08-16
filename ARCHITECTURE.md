@@ -33,8 +33,8 @@ flowchart TD
 隔离外部 API：
 
 - `database.ts` 读写 `launcher-items`，浏览器预览时使用 localStorage。
-- `features.ts` 管理 `item_${id}` 动态指令并清理失效指令。
-- `platform.ts` 统一启动和路径检查结果。
+- `features.ts` 管理 `item_${id}` 动态指令、平台过滤并清理失效指令。
+- `platform.ts` 统一启动、命令平台校验和路径检查结果。
 
 ### `public/preload`
 
@@ -43,6 +43,8 @@ flowchart TD
 - Electron `shell`
 - Node.js `fs` / `path`
 - Node.js `child_process`
+
+命令不依赖 Electron 的隐式默认 Shell：macOS 明确调用 `/bin/zsh -lc`，Windows 调用 `cmd.exe /d /s /c`，Linux 优先调用 `/bin/bash -lc` 并回退到 `/bin/sh -c`。
 
 ## 数据兼容合同
 
@@ -65,6 +67,7 @@ interface LauncherDocument {
 - 资源数组是核心用户数据，每次用户操作后写入同步数据库。
 - 搜索词、当前筛选、弹窗、拖拽状态和路径检查结果只保存在内存中。
 - 文件图标由 uTools 现场生成，不写入同步数据库。
+- 命令的 `platform` 是可选字段；缺失表示兼容所有系统，以保证 1.x 数据无需迁移即可使用。
 - 时间字段使用 UTC Unix 秒级时间戳；历史 `createdAt` 数据原样保留。
 
 ## 测试边界

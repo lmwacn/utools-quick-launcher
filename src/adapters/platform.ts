@@ -1,4 +1,16 @@
-import type { LauncherItem, PathInspection, ServiceResult } from '../types/launcher'
+import { COMMAND_PLATFORMS, type CommandPlatform, type LauncherItem, type PathInspection, type ServiceResult } from '../types/launcher'
+
+const PLATFORM_LABELS: Record<CommandPlatform, string> = {
+  all: '所有系统',
+  win32: 'Windows',
+  darwin: 'macOS',
+  linux: 'Linux'
+}
+
+export function getCurrentPlatform(): CommandPlatform {
+  const platform = window.services?.getPlatform()
+  return COMMAND_PLATFORMS.includes(platform as CommandPlatform) ? platform as CommandPlatform : 'all'
+}
 
 export function notify(message: string): void {
   if (window.utools) window.utools.showNotification(message)
@@ -22,6 +34,12 @@ export async function launchItem(item: LauncherItem): Promise<ServiceResult<unkn
   if (!window.services) return { ok: false, error: '请在 uTools 开发环境中测试启动功能' }
 
   if (item.type === 'url') return window.services.openExternal(item.path)
-  if (item.type === 'cmd') return window.services.runCommand(item.path)
+  if (item.type === 'cmd') {
+    const currentPlatform = getCurrentPlatform()
+    if (item.platform && item.platform !== 'all' && currentPlatform !== item.platform) {
+      return { ok: false, error: `该命令仅支持 ${PLATFORM_LABELS[item.platform]}，当前系统为 ${PLATFORM_LABELS[currentPlatform]}` }
+    }
+    return window.services.runCommand(item.path)
+  }
   return window.services.openPath(item.path)
 }

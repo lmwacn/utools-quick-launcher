@@ -6,7 +6,7 @@ import {
   setItemFeature,
   syncItemFeatures
 } from './adapters/features'
-import { getFileIcon, inspectItem, launchItem, notify } from './adapters/platform'
+import { getCurrentPlatform, getFileIcon, inspectItem, launchItem, notify } from './adapters/platform'
 import HelpDialog from './components/HelpDialog'
 import ResourceCard from './components/ResourceCard'
 import ResourceFormDialog from './components/ResourceFormDialog'
@@ -40,6 +40,7 @@ function App() {
     tone: 'error'
   } : null)
   const [draggingId, setDraggingId] = useState<string | null>(null)
+  const currentPlatform = getCurrentPlatform()
   const itemsRef = useRef(items)
   const toastTimerRef = useRef<number | null>(null)
 
@@ -195,6 +196,17 @@ function App() {
 
   const handleSubmitForm = (draft: LauncherDraft) => {
     if (!form) return
+    if (draft.type === 'file' || draft.type === 'folder') {
+      const inspection = window.services?.inspectPath(draft.path.trim())
+      if (inspection && !inspection.exists) {
+        showToast({ text: '该路径不存在，请检查后重试', tone: 'error' })
+        return
+      }
+      if (inspection && (draft.type === 'folder') !== inspection.isDirectory) {
+        showToast({ text: draft.type === 'folder' ? '所选路径不是文件夹' : '所选路径不是文件', tone: 'error' })
+        return
+      }
+    }
     const nextItem = itemFromDraft(draft, form.item)
     const duplicate = items.find((item) => item.id !== nextItem.id && item.type === nextItem.type && item.path === nextItem.path)
     if (duplicate) {
@@ -298,6 +310,15 @@ function App() {
     return result.data
   }
 
+  const handleSelectPath = async (type: 'file' | 'folder'): Promise<string | null> => {
+    if (!window.services) {
+      showToast({ text: '请在 uTools 开发环境中选择本地资源', tone: 'error' })
+      return null
+    }
+    const paths = await window.services.selectFile(type)
+    return paths?.[0] ?? null
+  }
+
   const handleDropFiles = (event: React.DragEvent<HTMLElement>) => {
     event.preventDefault()
     if (event.dataTransfer.types.includes('text/quick-launcher-item')) return
@@ -365,9 +386,11 @@ function App() {
         <ResourceFormDialog
           type={form.type}
           item={form.item}
+          currentPlatform={currentPlatform}
           onClose={() => setForm(null)}
           onSubmit={handleSubmitForm}
           onSelectImage={handleSelectImage}
+          onSelectPath={handleSelectPath}
         />
       )}
       {showHelp && <HelpDialog onClose={() => setShowHelp(false)} />}

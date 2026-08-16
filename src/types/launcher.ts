@@ -1,6 +1,8 @@
 export const RESOURCE_TYPES = ['folder', 'file', 'url', 'cmd'] as const
+export const COMMAND_PLATFORMS = ['all', 'win32', 'darwin', 'linux'] as const
 
 export type ResourceType = (typeof RESOURCE_TYPES)[number]
+export type CommandPlatform = (typeof COMMAND_PLATFORMS)[number]
 
 export interface LauncherItem {
   id: string
@@ -9,6 +11,7 @@ export interface LauncherItem {
   name: string
   displayName?: string
   customIcon?: string
+  platform?: CommandPlatform
   createdAt?: number
   [key: string]: unknown
 }
@@ -27,6 +30,7 @@ export interface LauncherDraft {
   name: string
   displayName: string
   customIcon: string
+  platform?: CommandPlatform
 }
 
 export interface MigrationResult {

@@ -11,6 +11,7 @@ interface UtoolsFeature {
   code: string
   explain?: string
   icon?: string
+  platform?: string[]
   cmds: string[]
 }
 
@@ -41,7 +42,7 @@ interface PluginEnterAction {
 interface QuickLauncherServices {
   openPath: (targetPath: string) => Promise<ServiceResult>
   openExternal: (url: string) => Promise<ServiceResult>
-  runCommand: (command: string) => Promise<ServiceResult<{ pid?: number }>>
+  runCommand: (command: string) => Promise<ServiceResult<{ pid?: number; shell?: string; platform?: string }>>
   selectFile: (type: 'file' | 'folder') => Promise<string[] | null>
   inspectPath: (targetPath: string) => PathInspection
   readTextFile: (targetPath: string) => ServiceResult<string>

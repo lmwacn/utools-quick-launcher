@@ -5,6 +5,19 @@ const { spawn } = require('node:child_process')
 
 const MAX_ICON_BYTES = 300 * 1024
 
+function commandShell (command) {
+  if (process.platform === 'win32') {
+    return { executable: process.env.ComSpec || 'cmd.exe', args: ['/d', '/s', '/c', command] }
+  }
+  if (process.platform === 'darwin') {
+    return { executable: '/bin/zsh', args: ['-lc', command] }
+  }
+  if (fs.existsSync('/bin/bash')) {
+    return { executable: '/bin/bash', args: ['-lc', command] }
+  }
+  return { executable: '/bin/sh', args: ['-c', command] }
+}
+
 function success (data) {
   return data === undefined ? { ok: true } : { ok: true, data }
 }
@@ -48,8 +61,8 @@ window.services = {
 
       let settled = false
       let startedTimer
-      const child = spawn(command, {
-        shell: true,
+      const selectedShell = commandShell(command.trim())
+      const child = spawn(selectedShell.executable, selectedShell.args, {
         detached: true,
         stdio: 'ignore',
         windowsHide: false
@@ -60,7 +73,7 @@ window.services = {
           if (settled) return
           settled = true
           child.unref()
-          resolve(success({ pid: child.pid }))
+          resolve(success({ pid: child.pid, shell: selectedShell.executable, platform: process.platform }))
         }, 400)
       })
       child.once('error', (error) => {
@@ -73,7 +86,9 @@ window.services = {
         if (settled) return
         clearTimeout(startedTimer)
         settled = true
-        resolve(code === 0 ? success({ pid: child.pid }) : failure(`命令已退出，代码 ${code}`))
+        resolve(code === 0
+          ? success({ pid: child.pid, shell: selectedShell.executable, platform: process.platform })
+          : failure(`命令已退出，代码 ${code}`))
       })
     })
   },

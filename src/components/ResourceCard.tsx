@@ -29,6 +29,12 @@ const TYPE_MARKS: Record<ResourceType, string> = {
   cmd: '$_'
 }
 
+const PLATFORM_SHORT_LABELS = {
+  darwin: 'macOS',
+  win32: 'Windows',
+  linux: 'Linux'
+} as const
+
 export default function ResourceCard({
   item,
   fileIcon,
@@ -45,7 +51,11 @@ export default function ResourceCard({
   const menuRef = useRef<HTMLDetailsElement>(null)
   const isMissing = inspection?.exists === false
   const displayName = item.displayName || item.name
-  const subtitle = item.displayName ? item.name : item.type === 'cmd' ? item.path : ''
+  const subtitle = item.displayName
+    ? item.name
+    : item.type === 'cmd'
+      ? item.platform && item.platform !== 'all' ? PLATFORM_SHORT_LABELS[item.platform] : item.path
+      : ''
   const image = item.customIcon || fileIcon
   const closeMenu = () => {
     if (menuRef.current) menuRef.current.open = false

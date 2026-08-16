@@ -41,7 +41,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -53,6 +54,7 @@ summary {
 button:focus-visible,
 summary:focus-visible,
 input:focus-visible,
+select:focus-visible,
 [tabindex="0"]:focus-visible {
   outline: 3px solid rgb(34 100 229 / 24%);
   outline-offset: 2px;
@@ -397,8 +399,8 @@ input:disabled {
 
 .resource-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(142px, 1fr));
-  gap: 13px;
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+  gap: 9px;
 }
 
 .resource-card {
@@ -406,7 +408,7 @@ input:disabled {
   min-width: 0;
   overflow: visible;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 13px;
   background: var(--surface);
   box-shadow: var(--shadow-sm);
   transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, opacity 160ms ease;
@@ -432,9 +434,9 @@ input:disabled {
 .card-topline {
   position: absolute;
   z-index: 5;
-  top: 8px;
-  right: 8px;
-  left: 8px;
+  top: 6px;
+  right: 6px;
+  left: 6px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -442,11 +444,11 @@ input:disabled {
 }
 
 .type-label {
-  padding: 3px 7px;
-  border-radius: 7px;
-  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 9px;
   font-weight: 650;
-  line-height: 15px;
+  line-height: 14px;
 }
 
 .type-label--file { background: #e7f8fb; color: #087b8c; }
@@ -461,8 +463,8 @@ input:disabled {
 
 .card-menu > summary {
   display: grid;
-  width: 26px;
-  height: 26px;
+  width: 23px;
+  height: 23px;
   place-items: center;
   border-radius: 8px;
   color: var(--text-muted);
@@ -524,10 +526,10 @@ input:disabled {
 .card-launch {
   display: flex;
   width: 100%;
-  min-height: 154px;
+  min-height: 116px;
   align-items: center;
   justify-content: center;
-  padding: 36px 13px 15px;
+  padding: 29px 8px 10px;
   border: 0;
   border-radius: inherit;
   background: transparent;
@@ -539,21 +541,21 @@ input:disabled {
 .resource-icon {
   position: relative;
   display: grid;
-  width: 48px;
-  height: 48px;
+  width: 38px;
+  height: 38px;
   place-items: center;
-  margin-bottom: 11px;
-  border-radius: 13px;
+  margin-bottom: 7px;
+  border-radius: 10px;
   background: var(--surface-soft);
   color: var(--text-secondary);
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 750;
 }
 
 .resource-icon img {
   position: absolute;
-  width: 39px;
-  height: 39px;
+  width: 31px;
+  height: 31px;
   object-fit: contain;
 }
 
@@ -578,14 +580,14 @@ input:disabled {
 }
 
 .card-launch strong {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 650;
 }
 
 .card-launch small {
-  margin-top: 4px;
+  margin-top: 3px;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .missing-status {
@@ -730,7 +732,8 @@ input:disabled {
   font-weight: 400;
 }
 
-.field input {
+.field input,
+.field select {
   width: 100%;
   min-height: 40px;
   padding: 8px 11px;
@@ -740,7 +743,8 @@ input:disabled {
   color: var(--text);
 }
 
-.field input:focus {
+.field input:focus,
+.field select:focus {
   border-color: #8eaff1;
   outline: 0;
   box-shadow: 0 0 0 3px rgb(34 100 229 / 10%);
@@ -897,12 +901,12 @@ input:disabled {
   }
 
   .resource-grid {
-    grid-template-columns: repeat(auto-fill, minmax(126px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(98px, 1fr));
+    gap: 8px;
   }
 
   .card-launch {
-    min-height: 142px;
+    min-height: 112px;
   }
 
   .help-grid {

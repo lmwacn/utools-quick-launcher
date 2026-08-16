@@ -39,6 +39,7 @@ describe('历史数据兼容', () => {
 
     expect(result.items[0].path).toBe('https://u.tools')
     expect(result.items[1]).toMatchObject({ type: 'cmd', path: 'calc' })
+    expect(result.items[1].platform).toBeUndefined()
   })
 
   it('忽略缺少名称或路径的损坏数据', () => {
@@ -68,6 +69,28 @@ describe('资源业务规则', () => {
     })
     expect(item).toMatchObject({ type: 'url', path: 'https://example.com', name: '示例' })
     expect(item.id).toBeTruthy()
+  })
+
+  it('保存命令平台并允许恢复为全平台兼容', () => {
+    const macCommand = itemFromDraft({
+      type: 'cmd',
+      path: 'open -a "Safari"',
+      name: '打开 Safari',
+      displayName: '',
+      customIcon: '',
+      platform: 'darwin'
+    })
+    expect(macCommand.platform).toBe('darwin')
+
+    const compatibleCommand = itemFromDraft({
+      type: 'cmd',
+      path: macCommand.path,
+      name: macCommand.name,
+      displayName: '',
+      customIcon: '',
+      platform: 'all'
+    }, macCommand)
+    expect(compatibleCommand.platform).toBeUndefined()
   })
 
   it('导入时按 ID 或类型+路径去重', () => {

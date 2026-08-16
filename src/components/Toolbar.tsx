@@ -67,7 +67,7 @@ export default function Toolbar({
                 <span className="menu-mark menu-mark--url">网</span><span><b>网页</b><small>网站、后台和在线工具</small></span>
               </button>
               <button type="button" aria-label="添加命令" onClick={(event) => runAndClose(event, () => onAddVirtual('cmd'))}>
-                <span className="menu-mark menu-mark--cmd">$_</span><span><b>命令</b><small>CMD、Shell 和开发脚本</small></span>
+                <span className="menu-mark menu-mark--cmd">$_</span><span><b>命令</b><small>macOS、Windows 和 Linux</small></span>
               </button>
             </div>
           </details>

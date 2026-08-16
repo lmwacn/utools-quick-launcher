@@ -1,14 +1,16 @@
 import { useState, type FormEvent } from 'react'
 import { validateDraft } from '../domain/launcherItems'
-import type { LauncherDraft, LauncherItem, ResourceType } from '../types/launcher'
+import type { CommandPlatform, LauncherDraft, LauncherItem, ResourceType } from '../types/launcher'
 import Modal from './Modal'
 
 interface ResourceFormDialogProps {
   type: ResourceType
   item?: LauncherItem
+  currentPlatform: CommandPlatform
   onClose: () => void
   onSubmit: (draft: LauncherDraft) => void
   onSelectImage: () => Promise<string | null>
+  onSelectPath: (type: 'file' | 'folder') => Promise<string | null>
 }
 
 const TYPE_LABELS: Record<ResourceType, string> = {
@@ -18,25 +20,43 @@ const TYPE_LABELS: Record<ResourceType, string> = {
   cmd: '命令'
 }
 
+const PLATFORM_OPTIONS: Array<{ value: CommandPlatform; label: string }> = [
+  { value: 'darwin', label: 'macOS · zsh' },
+  { value: 'win32', label: 'Windows · CMD' },
+  { value: 'linux', label: 'Linux · Bash / sh' },
+  { value: 'all', label: '所有系统（命令需自行兼容）' }
+]
+
+const COMMAND_PLACEHOLDERS: Record<CommandPlatform, string> = {
+  darwin: '例如：open -a "Visual Studio Code"',
+  win32: '例如：start "" "C:\\Projects"',
+  linux: '例如：xdg-open ~/Projects',
+  all: '输入当前系统可执行的 Shell 命令'
+}
+
 export default function ResourceFormDialog({
   type,
   item,
+  currentPlatform,
   onClose,
   onSubmit,
-  onSelectImage
+  onSelectImage,
+  onSelectPath
 }: ResourceFormDialogProps) {
   const [draft, setDraft] = useState<LauncherDraft>({
     type,
     path: item?.path ?? '',
     name: item?.name ?? '',
     displayName: item?.displayName ?? '',
-    customIcon: item?.customIcon ?? ''
+    customIcon: item?.customIcon ?? '',
+    platform: item?.platform ?? (type === 'cmd' ? currentPlatform : undefined)
   })
   const [error, setError] = useState('')
   const [selectingImage, setSelectingImage] = useState(false)
+  const [selectingPath, setSelectingPath] = useState(false)
   const localResource = type === 'file' || type === 'folder'
 
-  const update = (field: keyof LauncherDraft, value: string) => {
+  const update = <K extends keyof LauncherDraft>(field: K, value: LauncherDraft[K]) => {
     setDraft((current) => ({ ...current, [field]: value }))
     setError('')
   }
@@ -56,6 +76,14 @@ export default function ResourceFormDialog({
     const image = await onSelectImage()
     setSelectingImage(false)
     if (image) update('customIcon', image)
+  }
+
+  const handleSelectPath = async () => {
+    if (!localResource) return
+    setSelectingPath(true)
+    const targetPath = await onSelectPath(type)
+    setSelectingPath(false)
+    if (targetPath) update('path', targetPath)
   }
 
   return (
@@ -87,17 +115,48 @@ export default function ResourceFormDialog({
           />
         </label>
 
-        <label className="field">
+        <div className="field">
           <span>{type === 'url' ? '网址' : type === 'cmd' ? '命令' : '路径'} <b aria-hidden="true">*</b></span>
-          <input
-            value={draft.path}
-            onChange={(event) => update('path', event.target.value)}
-            placeholder={type === 'url' ? 'https://example.com' : type === 'cmd' ? '例如：calc' : ''}
-            disabled={localResource}
-            autoComplete="off"
-          />
-          {localResource && <small>本地资源的路径不可在这里修改，可删除后重新添加</small>}
-        </label>
+          {localResource ? (
+            <div className="inline-field">
+              <input
+                value={draft.path}
+                onChange={(event) => update('path', event.target.value)}
+                placeholder={type === 'folder' ? '/Users/name/Projects' : '/Users/name/file.ext'}
+                autoComplete="off"
+                aria-label="本地资源路径"
+              />
+              <button className="button button--secondary" type="button" onClick={handleSelectPath} disabled={selectingPath}>
+                {selectingPath ? '选择中…' : '重新选择'}
+              </button>
+            </div>
+          ) : (
+            <input
+              value={draft.path}
+              onChange={(event) => update('path', event.target.value)}
+              placeholder={type === 'url' ? 'https://example.com' : COMMAND_PLACEHOLDERS[draft.platform ?? currentPlatform]}
+              autoComplete="off"
+              aria-label={type === 'url' ? '网址' : '命令'}
+            />
+          )}
+          {localResource && <small>可直接修改路径，也可以重新选择；保存时会检查路径和资源类型</small>}
+        </div>
+
+        {type === 'cmd' && (
+          <label className="field">
+            <span>运行平台</span>
+            <select
+              aria-label="运行平台"
+              value={draft.platform ?? currentPlatform}
+              onChange={(event) => update('platform', event.target.value as CommandPlatform)}
+            >
+              {PLATFORM_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+            <small>macOS 使用登录式 zsh，Windows 使用 CMD，Linux 优先使用 Bash</small>
+          </label>
+        )}
 
         <div className="field">
           <span>自定义图标 <em>可选</em></span>

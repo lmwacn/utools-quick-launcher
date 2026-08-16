@@ -15,6 +15,7 @@ export function setItemFeature(item: LauncherItem): void {
     code: featureCode(item.id),
     explain: `快速打开：${item.displayName || item.name}`,
     ...(item.customIcon?.startsWith('data:image/') ? { icon: item.customIcon } : {}),
+    ...(item.type === 'cmd' && item.platform && item.platform !== 'all' ? { platform: [item.platform] } : {}),
     cmds: [item.name]
   })
 }
