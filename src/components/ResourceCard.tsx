@@ -97,9 +97,12 @@ export default function ResourceCard({
         aria-label={`${isMissing ? '已失效，' : ''}启动${displayName}`}
         title={item.path}
       >
-        <span className="resource-icon" aria-hidden="true">
+        <span className={`resource-icon${image ? ' has-image' : ''}`} aria-hidden="true">
           <ResourceGlyph type={item.type} />
-          {image && <img src={image} alt="" onError={(event) => { event.currentTarget.style.display = 'none' }} />}
+          {image && <img src={image} alt="" onError={(event) => {
+            event.currentTarget.style.display = 'none'
+            event.currentTarget.parentElement?.classList.remove('has-image')
+          }} />}
         </span>
         <strong>{displayName}</strong>
         {subtitle && <small>{subtitle}</small>}

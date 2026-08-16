@@ -579,6 +579,7 @@ input:disabled {
 .resource-card--file .resource-icon { background: #eaf8fb; color: #087b8c; }
 .resource-card--url .resource-icon { background: #e9f8ef; color: #18794e; }
 .resource-card--cmd .resource-icon { background: #edf0f5; color: #354158; font-family: ui-monospace, monospace; }
+.resource-card .resource-icon.has-image { background: transparent; }
 
 .card-launch strong,
 .card-launch small {
