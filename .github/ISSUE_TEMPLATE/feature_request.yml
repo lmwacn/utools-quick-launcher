@@ -1,0 +1,21 @@
+name: 功能建议
+description: 提交一个可验证的改进建议
+title: "[Feature] "
+labels: [enhancement]
+body:
+  - type: textarea
+    attributes:
+      label: 使用场景
+      description: 请说明当前遇到的问题，而不只是解决方案。
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 建议方案
+      description: 描述期望的交互和用户收益。
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 数据与兼容性影响
+      description: 如果涉及历史数据或动态指令，请说明兼容方案。

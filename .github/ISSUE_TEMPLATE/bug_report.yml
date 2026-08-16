@@ -1,0 +1,32 @@
+name: Bug 报告
+description: 报告可稳定复现的问题
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: textarea
+    attributes:
+      label: 问题描述
+      description: 请描述实际结果和期望结果。
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 复现步骤
+      description: 请提供最小可复现步骤。
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: uTools 和插件版本
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: 操作系统
+      options: [Windows, macOS, Linux]
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 补充信息
+      description: 可提供截图或已脱敏的错误信息，不要提交隐私数据。
