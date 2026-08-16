@@ -249,6 +249,11 @@ input:disabled {
   font-weight: 700;
 }
 
+.menu-mark svg {
+  width: 20px;
+  height: 20px;
+}
+
 .menu-mark--file { background: #e7f8fb; color: #087b8c; }
 .menu-mark--folder { background: #fff4cf; color: #8f6400; }
 .menu-mark--url { background: #e7f8ef; color: #18794e; }
@@ -557,6 +562,11 @@ input:disabled {
   width: 31px;
   height: 31px;
   object-fit: contain;
+}
+
+.resource-icon > svg {
+  width: 22px;
+  height: 22px;
 }
 
 @media (hover: none) {

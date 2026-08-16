@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="launcher-bg" x1="18" y1="112" x2="112" y2="16" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0767E8"/>
+      <stop offset="1" stop-color="#11B9F4"/>
+    </linearGradient>
+    <linearGradient id="launcher-fold" x1="55" y1="70" x2="82" y2="98" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#DDF2FF"/>
+      <stop offset="1" stop-color="#B7DFFF"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="30" fill="url(#launcher-bg)"/>
+  <path d="M31 98 99 30 71 99 56 71 31 98Z" fill="#fff"/>
+  <path d="m56 71 43-41-28 69-15-28Z" fill="url(#launcher-fold)"/>
+  <path d="m31 98 25-27 7 13-32 14Z" fill="#fff" opacity=".38"/>
+</svg>

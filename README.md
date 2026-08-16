@@ -48,6 +48,13 @@ npm run check        # 完整执行规范、测试和构建检查
 
 uTools 打包时只使用 `dist` 产物，不要打包整个源码目录。`public` 中的 `plugin.json`、`logo.png` 和 `preload` 会被 Vite 原样复制到 `dist`。
 
+### 图标维护
+
+- `public/logo.svg` 是蓝色纸飞机 Logo 的可编辑源文件，界面和主动态指令直接使用 SVG。
+- `public/logo.png` 是 256×256 的发布图标，`plugin.json` 保持引用 PNG，兼容上传和展示环境。
+- 修改 SVG 后需重新生成 PNG；macOS 可执行 `sips -z 256 256 -s format png public/logo.svg --out public/logo.png`。
+- uTools 官方允许功能指令图标使用 PNG、JPG 或 SVG，详见 [plugin.json 配置说明](https://www.u-tools.cn/docs/developer/information/plugin-json.html)。
+
 ## 历史数据兼容
 
 新版本保留以下兼容合同：
@@ -74,7 +81,8 @@ src/
 └── types/          资源与 uTools 类型定义
 public/
 ├── plugin.json
-├── logo.png
+├── logo.svg        可维护的纸飞机品牌源文件
+├── logo.png        uTools 插件主图标
 └── preload/         未打包的 CommonJS 本地能力层
 ```
 

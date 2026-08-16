@@ -9,6 +9,7 @@
     {
       "code": "launcher",
       "explain": "统一管理并快速启动文件、文件夹、网页和命令",
+      "icon": "logo.svg",
       "cmds": ["快速启动", "ksqd", "launch"]
     }
   ],

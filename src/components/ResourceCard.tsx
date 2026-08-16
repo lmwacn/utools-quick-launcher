@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import type { LauncherItem, PathInspection, ResourceType } from '../types/launcher'
+import ResourceGlyph from './ResourceGlyph'
 
 interface ResourceCardProps {
   item: LauncherItem
@@ -20,13 +21,6 @@ const TYPE_LABELS: Record<ResourceType, string> = {
   file: '文件',
   url: '网页',
   cmd: '命令'
-}
-
-const TYPE_MARKS: Record<ResourceType, string> = {
-  folder: '夹',
-  file: '件',
-  url: '网',
-  cmd: '$_'
 }
 
 const PLATFORM_SHORT_LABELS = {
@@ -104,7 +98,7 @@ export default function ResourceCard({
         title={item.path}
       >
         <span className="resource-icon" aria-hidden="true">
-          <span>{TYPE_MARKS[item.type]}</span>
+          <ResourceGlyph type={item.type} />
           {image && <img src={image} alt="" onError={(event) => { event.currentTarget.style.display = 'none' }} />}
         </span>
         <strong>{displayName}</strong>

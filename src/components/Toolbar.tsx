@@ -1,5 +1,6 @@
 import type { MouseEvent } from 'react'
 import type { ResourceType } from '../types/launcher'
+import ResourceGlyph from './ResourceGlyph'
 
 export type FilterType = 'all' | ResourceType
 
@@ -46,7 +47,7 @@ export default function Toolbar({
     <>
       <header className="app-header">
         <div className="brand-block">
-          <img src="./logo.png" alt="" />
+          <img src="./logo.svg" alt="" />
           <div>
             <h1>快速启动</h1>
             <p>所有资源，一处启动</p>
@@ -58,16 +59,16 @@ export default function Toolbar({
             <summary role="button" className="button button--primary" aria-label="添加资源">+ 添加资源</summary>
             <div className="dropdown-panel dropdown-panel--wide">
               <button type="button" aria-label="添加文件" onClick={(event) => runAndClose(event, () => onAddLocal('file'))}>
-                <span className="menu-mark menu-mark--file">件</span><span><b>文件</b><small>应用、文档、脚本等</small></span>
+                <span className="menu-mark menu-mark--file"><ResourceGlyph type="file" /></span><span><b>文件</b><small>应用、文档、脚本等</small></span>
               </button>
               <button type="button" aria-label="添加文件夹" onClick={(event) => runAndClose(event, () => onAddLocal('folder'))}>
-                <span className="menu-mark menu-mark--folder">夹</span><span><b>文件夹</b><small>常用项目和工作目录</small></span>
+                <span className="menu-mark menu-mark--folder"><ResourceGlyph type="folder" /></span><span><b>文件夹</b><small>常用项目和工作目录</small></span>
               </button>
               <button type="button" aria-label="添加网页" onClick={(event) => runAndClose(event, () => onAddVirtual('url'))}>
-                <span className="menu-mark menu-mark--url">网</span><span><b>网页</b><small>网站、后台和在线工具</small></span>
+                <span className="menu-mark menu-mark--url"><ResourceGlyph type="url" /></span><span><b>网页</b><small>网站、后台和在线工具</small></span>
               </button>
               <button type="button" aria-label="添加命令" onClick={(event) => runAndClose(event, () => onAddVirtual('cmd'))}>
-                <span className="menu-mark menu-mark--cmd">$_</span><span><b>命令</b><small>macOS、Windows 和 Linux</small></span>
+                <span className="menu-mark menu-mark--cmd"><ResourceGlyph type="cmd" /></span><span><b>命令</b><small>macOS、Windows 和 Linux</small></span>
               </button>
             </div>
           </details>
