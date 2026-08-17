@@ -88,9 +88,9 @@ input:disabled {
 }
 
 .app-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(220px, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 20px;
 }
 
@@ -263,9 +263,9 @@ input:disabled {
 
 .search-row {
   display: flex;
+  min-width: 0;
   align-items: center;
   gap: 10px;
-  margin-top: 26px;
 }
 
 .search-box {
@@ -287,7 +287,7 @@ input:disabled {
 
 .search-box input {
   width: 100%;
-  height: 46px;
+  height: 42px;
   padding: 0 44px;
   border: 1px solid var(--line);
   border-radius: 13px;
@@ -340,7 +340,7 @@ input:disabled {
 .filter-tabs {
   display: flex;
   gap: 6px;
-  margin-top: 18px;
+  margin-top: 22px;
   overflow-x: auto;
   padding-bottom: 2px;
 }
@@ -1152,7 +1152,13 @@ input:disabled {
   }
 
   .app-header {
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: flex-start;
+  }
+
+  .app-header .search-row {
+    grid-column: 1 / -1;
+    width: 100%;
   }
 
   .brand-block p,

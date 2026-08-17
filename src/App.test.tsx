@@ -16,6 +16,12 @@ describe('快速启动首页', () => {
     expect(screen.getByLabelText('添加资源')).toBeInTheDocument()
   })
 
+  it('搜索框位于顶部标题栏中', () => {
+    render(<App />)
+    const header = screen.getByRole('banner')
+    expect(within(header).getByRole('searchbox')).toBeInTheDocument()
+  })
+
   it('可以添加网页并通过搜索过滤', async () => {
     const user = userEvent.setup()
     render(<App />)

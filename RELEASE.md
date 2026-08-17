@@ -7,7 +7,7 @@ npm ci
 npm run release:check
 ```
 
-该命令会执行 ESLint、37 项自动化测试、preload 语法检查、TypeScript、Vite 构建，并验证：
+该命令会执行 ESLint、38 项自动化测试、preload 语法检查、TypeScript、Vite 构建，并验证：
 
 - `package.json` 与 `plugin.json` 版本一致。
 - 插件标识仍为 `zqbyq8zn`。
