@@ -73,6 +73,21 @@ export default function Toolbar({
           </div>
         </div>
 
+        <section className="search-row" aria-label="搜索与筛选">
+          <label className="search-box">
+            <span className="visually-hidden">搜索启动项</span>
+            <input
+              type="search"
+              value={search}
+              onChange={(event) => onSearch(event.target.value)}
+              placeholder="搜索名称、别名或路径…"
+              autoComplete="off"
+            />
+            {search && <button type="button" onClick={() => onSearch('')} aria-label="清空搜索">×</button>}
+          </label>
+          <kbd>{currentPlatform === 'win32' || currentPlatform === 'linux' ? 'Ctrl K' : '⌘ K'}</kbd>
+        </section>
+
         <div className="header-actions">
           <details className="dropdown">
             <summary role="button" className="button button--primary" aria-label="添加资源">+ 添加资源</summary>
@@ -105,21 +120,6 @@ export default function Toolbar({
           </details>
         </div>
       </header>
-
-      <section className="search-row" aria-label="搜索与筛选">
-        <label className="search-box">
-          <span className="visually-hidden">搜索启动项</span>
-          <input
-            type="search"
-            value={search}
-            onChange={(event) => onSearch(event.target.value)}
-            placeholder="搜索名称、别名或路径…"
-            autoComplete="off"
-          />
-          {search && <button type="button" onClick={() => onSearch('')} aria-label="清空搜索">×</button>}
-        </label>
-        <kbd>{currentPlatform === 'win32' || currentPlatform === 'linux' ? 'Ctrl K' : '⌘ K'}</kbd>
-      </section>
 
       <nav className="filter-tabs" aria-label="资源类型">
         {FILTERS.map((entry) => (
