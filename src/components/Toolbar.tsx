@@ -108,7 +108,9 @@ export default function Toolbar({
           </details>
 
           <details className="dropdown">
-            <summary role="button" className="button button--secondary more-button" aria-label="更多操作">…</summary>
+            <summary role="button" className="button button--secondary more-button" aria-label="更多操作">
+              <span className="more-button-dots" aria-hidden="true">⋯</span>
+            </summary>
             <div className="dropdown-panel dropdown-panel--compact">
               <button type="button" onClick={(event) => runAndClose(event, onImport)}>导入数据</button>
               <button type="button" onClick={(event) => runAndClose(event, onExport)}>导出备份</button>
