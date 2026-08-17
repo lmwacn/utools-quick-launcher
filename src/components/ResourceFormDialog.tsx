@@ -73,7 +73,7 @@ export default function ResourceFormDialog({
     name: item?.name ?? '',
     displayName: item?.displayName ?? '',
     customIcon: item?.customIcon ?? '',
-    platform: item?.platform ?? (type === 'cmd' ? currentPlatform : undefined),
+    platform: type === 'cmd' ? (item ? item.platform ?? 'all' : currentPlatform) : undefined,
     commandMode: item?.commandMode ?? 'background',
     workingDirectory: item?.workingDirectory ?? '',
     environment: formatEnvironment(item?.environment),
