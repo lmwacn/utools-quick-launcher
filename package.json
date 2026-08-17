@@ -1,7 +1,8 @@
 {
   "name": "utools-quick-launcher",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
+  "license": "Apache-2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,9 +10,12 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "npm run lint && npm run test && npm run build"
+    "check:preload": "node --check public/preload/services.js",
+    "check": "npm run lint && npm run test && npm run check:preload && npm run build",
+    "release:check": "npm run check && node scripts/verify-release.mjs"
   },
   "dependencies": {
+    "pinyin-pro": "3.29.2",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },
@@ -20,6 +24,7 @@
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.2",
     "@testing-library/user-event": "14.6.4",
+    "@types/node": "20.19.43",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
     "@vitejs/plugin-react": "6.0.5",

@@ -17,7 +17,7 @@ describe('数据库适配层', () => {
   it('在浏览器预览中使用同样的文档格式', () => {
     saveLauncherItems([item])
     const raw = JSON.parse(window.localStorage.getItem('quick-launcher:launcher-items') || '{}')
-    expect(raw).toMatchObject({ _id: LEGACY_DOCUMENT_ID, schemaVersion: 2, data: [item] })
+    expect(raw).toMatchObject({ _id: LEGACY_DOCUMENT_ID, schemaVersion: 3, data: [item] })
     expect(loadLauncherItems().items).toEqual([item])
   })
 

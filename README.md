@@ -6,10 +6,11 @@
 
 - 添加和启动本地文件、文件夹、网页与跨平台命令。
 - macOS 使用登录式 zsh、Windows 使用 CMD、Linux 优先使用 Bash，并可为命令限定运行平台。
-- 按名称、卡片名称或路径搜索，并按资源类型筛选。
+- 命令支持工作目录、环境变量、后台运行和终端运行，导入命令首次执行前需要确认。
+- 按名称、路径、标签、模糊文本或中文拼音搜索，并按类型、收藏、最近使用和失效状态筛选。
 - 拖入多个本地资源，拖拽卡片调整排序。
 - 自动注册 uTools 动态指令，从 uTools 搜索框直接启动。
-- 支持修改本地资源路径、自定义图标、导入导出、失效路径提示和删除撤销。
+- 支持站点图标、自定义图标压缩、批量操作、导入冲突预览、回收站和失效路径修复。
 - 支持浅色/深色主题、键盘导航、窄窗口和减少动画偏好。
 - 兼容 1.0.4 及更早版本的 `launcher-items` 数据。
 
@@ -44,6 +45,7 @@ npm run test         # 执行测试
 npm run test:watch   # 监听模式测试
 npm run build        # 类型检查并生成 dist
 npm run check        # 完整执行规范、测试和构建检查
+npm run release:check # 检查可发布的 dist 目录
 ```
 
 uTools 打包时只使用 `dist` 产物，不要打包整个源码目录。`public` 中的 `plugin.json`、`logo.png` 和 `preload` 会被 Vite 原样复制到 `dist`。
@@ -64,11 +66,13 @@ uTools 打包时只使用 `dist` 产物，不要打包整个源码目录。`publ
 - 资源数组字段：`data`
 - 动态指令：`item_${id}`
 - 历史字段：`id` / `type` / `path` / `name` / `displayName` / `customIcon`
-- 新增可选字段：命令运行平台 `platform`（旧命令缺少该字段时按全平台兼容处理）
+- 新增可选字段：`platform` / `commandMode` / `workingDirectory` / `environment` / `tags` / `favorite`
 
 导入时同时兼容历史 `url`、`cmd` 和 `command` 字段。新版本将 `schemaVersion` 作为附加字段写入原文档，不会改变旧版的 `data` 数组结构。
 
-uTools 同步文档上限为 1 MB，因此新选择的本地图标限制为 300 KB，并在保存前检查整个文档体积。
+旧命令缺少高级字段时继续按全平台、后台运行处理。使用次数和回收站只保存在本机，不进入同步文档。
+
+uTools 同步文档上限为 1 MB。新选择的原始图标最大 2 MB，保存前会自动缩放到 128px 并压缩到 120 KB 以内，同时检查整个同步文档体积。
 
 ## 目录结构
 
@@ -86,12 +90,12 @@ public/
 └── preload/         未打包的 CommonJS 本地能力层
 ```
 
-更详细的模块边界见 [ARCHITECTURE.md](./ARCHITECTURE.md)，参与开发前请阅读 [CONTRIBUTING.md](./CONTRIBUTING.md)。
+更详细的模块边界见 [ARCHITECTURE.md](./ARCHITECTURE.md)，参与开发前请阅读 [CONTRIBUTING.md](./CONTRIBUTING.md)，发布前执行 [RELEASE.md](./RELEASE.md) 中的检查。
 
 ## 安全说明
 
-命令类资源会通过当前操作系统的 Shell 执行：macOS 为 `/bin/zsh -lc`，Windows 为 `cmd.exe`，Linux 优先为 `/bin/bash -lc`。Shell 命令拥有当前用户权限，请仅导入来源可信的备份，并仅保存自己理解和信任的命令。
+命令类资源会通过当前操作系统的 Shell 执行：macOS 为 `/bin/zsh -lc`，Windows 为 `cmd.exe`，Linux 优先为 `/bin/bash -lc`。Shell 命令拥有当前用户权限；导入的命令首次执行前会显示完整内容并请求确认。
 
 ## 许可证
 
-正式公开仓库前需由项目所有者选择并添加许可证。在许可证确定前，默认不授予复制、修改或分发权利。
+本项目采用 [Apache License 2.0](./LICENSE)，版权与归属信息见 [NOTICE](./NOTICE)。

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
-import { validateDraft } from '../domain/launcherItems'
-import type { CommandPlatform, LauncherDraft, LauncherItem, ResourceType } from '../types/launcher'
+import { formatEnvironment, validateDraft } from '../domain/launcherItems'
+import type { CommandMode, CommandPlatform, LauncherDraft, LauncherItem, ResourceType } from '../types/launcher'
 import Modal from './Modal'
 
 interface ResourceFormDialogProps {
@@ -11,6 +11,7 @@ interface ResourceFormDialogProps {
   onSubmit: (draft: LauncherDraft) => void
   onSelectImage: () => Promise<string | null>
   onSelectPath: (type: 'file' | 'folder') => Promise<string | null>
+  onFetchWebsiteIcon: (url: string) => Promise<string | null>
 }
 
 const TYPE_LABELS: Record<ResourceType, string> = {
@@ -34,6 +35,28 @@ const COMMAND_PLACEHOLDERS: Record<CommandPlatform, string> = {
   all: '输入当前系统可执行的 Shell 命令'
 }
 
+const COMMAND_TEMPLATES: Record<CommandPlatform, Array<{ label: string; command: string }>> = {
+  darwin: [
+    { label: '打开 Finder', command: 'open .' },
+    { label: '打开 VS Code', command: 'open -a "Visual Studio Code" .' },
+    { label: '启动开发服务', command: 'npm run dev' }
+  ],
+  win32: [
+    { label: '打开资源管理器', command: 'explorer .' },
+    { label: '打开 VS Code', command: 'code .' },
+    { label: '启动开发服务', command: 'npm run dev' }
+  ],
+  linux: [
+    { label: '打开文件管理器', command: 'xdg-open .' },
+    { label: '打开 VS Code', command: 'code .' },
+    { label: '启动开发服务', command: 'npm run dev' }
+  ],
+  all: [
+    { label: '启动开发服务', command: 'npm run dev' },
+    { label: '查看 Git 状态', command: 'git status' }
+  ]
+}
+
 export default function ResourceFormDialog({
   type,
   item,
@@ -41,7 +64,8 @@ export default function ResourceFormDialog({
   onClose,
   onSubmit,
   onSelectImage,
-  onSelectPath
+  onSelectPath,
+  onFetchWebsiteIcon
 }: ResourceFormDialogProps) {
   const [draft, setDraft] = useState<LauncherDraft>({
     type,
@@ -49,11 +73,17 @@ export default function ResourceFormDialog({
     name: item?.name ?? '',
     displayName: item?.displayName ?? '',
     customIcon: item?.customIcon ?? '',
-    platform: item?.platform ?? (type === 'cmd' ? currentPlatform : undefined)
+    platform: item?.platform ?? (type === 'cmd' ? currentPlatform : undefined),
+    commandMode: item?.commandMode ?? 'background',
+    workingDirectory: item?.workingDirectory ?? '',
+    environment: formatEnvironment(item?.environment),
+    tags: item?.tags?.join(', ') ?? ''
   })
   const [error, setError] = useState('')
   const [selectingImage, setSelectingImage] = useState(false)
   const [selectingPath, setSelectingPath] = useState(false)
+  const [fetchingIcon, setFetchingIcon] = useState(false)
+  const [advancedOpen, setAdvancedOpen] = useState(Boolean(item?.workingDirectory || item?.environment))
   const localResource = type === 'file' || type === 'folder'
 
   const update = <K extends keyof LauncherDraft>(field: K, value: LauncherDraft[K]) => {
@@ -84,6 +114,21 @@ export default function ResourceFormDialog({
     const targetPath = await onSelectPath(type)
     setSelectingPath(false)
     if (targetPath) update('path', targetPath)
+  }
+
+  const handleSelectWorkingDirectory = async () => {
+    setSelectingPath(true)
+    const targetPath = await onSelectPath('folder')
+    setSelectingPath(false)
+    if (targetPath) update('workingDirectory', targetPath)
+  }
+
+  const handleFetchWebsiteIcon = async () => {
+    if (type !== 'url' || !draft.path.trim() || draft.customIcon.trim()) return
+    setFetchingIcon(true)
+    const image = await onFetchWebsiteIcon(draft.path)
+    setFetchingIcon(false)
+    if (image) update('customIcon', image)
   }
 
   return (
@@ -134,6 +179,7 @@ export default function ResourceFormDialog({
             <input
               value={draft.path}
               onChange={(event) => update('path', event.target.value)}
+              onBlur={() => { if (type === 'url') void handleFetchWebsiteIcon() }}
               placeholder={type === 'url' ? 'https://example.com' : COMMAND_PLACEHOLDERS[draft.platform ?? currentPlatform]}
               autoComplete="off"
               aria-label={type === 'url' ? '网址' : '命令'}
@@ -143,20 +189,86 @@ export default function ResourceFormDialog({
         </div>
 
         {type === 'cmd' && (
-          <label className="field">
-            <span>运行平台</span>
-            <select
-              aria-label="运行平台"
-              value={draft.platform ?? currentPlatform}
-              onChange={(event) => update('platform', event.target.value as CommandPlatform)}
-            >
-              {PLATFORM_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
+          <>
+            <div className="form-split">
+              <label className="field">
+                <span>运行平台</span>
+                <select
+                  aria-label="运行平台"
+                  value={draft.platform ?? currentPlatform}
+                  onChange={(event) => update('platform', event.target.value as CommandPlatform)}
+                >
+                  {PLATFORM_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="field">
+                <span>运行方式</span>
+                <select
+                  aria-label="运行方式"
+                  value={draft.commandMode ?? 'background'}
+                  onChange={(event) => update('commandMode', event.target.value as CommandMode)}
+                >
+                  <option value="background">后台运行</option>
+                  <option value="terminal">在终端中运行</option>
+                </select>
+              </label>
+            </div>
+
+            <div className="command-templates" aria-label="命令模板">
+              <span>常用模板</span>
+              {(COMMAND_TEMPLATES[draft.platform ?? currentPlatform]).map((template) => (
+                <button key={template.label} type="button" onClick={() => update('path', template.command)}>{template.label}</button>
               ))}
-            </select>
-            <small>macOS 使用登录式 zsh，Windows 使用 CMD，Linux 优先使用 Bash</small>
-          </label>
+            </div>
+
+            <details
+              className="advanced-options"
+              open={advancedOpen}
+              onToggle={(event) => setAdvancedOpen(event.currentTarget.open)}
+            >
+              <summary>高级设置（工作目录、环境变量）</summary>
+              <div className="advanced-options__content">
+                <div className="field">
+                  <span>工作目录 <em>可选</em></span>
+                  <div className="inline-field">
+                    <input
+                      value={draft.workingDirectory ?? ''}
+                      onChange={(event) => update('workingDirectory', event.target.value)}
+                      placeholder="命令执行前进入的目录"
+                      aria-label="命令工作目录"
+                    />
+                    <button className="button button--secondary" type="button" onClick={handleSelectWorkingDirectory} disabled={selectingPath}>
+                      选择目录
+                    </button>
+                  </div>
+                </div>
+
+                <label className="field">
+                  <span>环境变量 <em>可选</em></span>
+                  <textarea
+                    value={draft.environment ?? ''}
+                    onChange={(event) => update('environment', event.target.value)}
+                    placeholder={'每行一个，例如：\nNODE_ENV=development\nPORT=5173'}
+                    rows={3}
+                  />
+                  <small>macOS 使用 zsh、Windows 使用 CMD、Linux 优先使用 Bash</small>
+                </label>
+              </div>
+            </details>
+          </>
         )}
+
+        <label className="field">
+          <span>标签 <em>可选</em></span>
+          <input
+            value={draft.tags ?? ''}
+            onChange={(event) => update('tags', event.target.value)}
+            placeholder="例如：工作, 开发, 常用"
+          />
+          <small>使用逗号分隔，便于筛选和搜索</small>
+        </label>
 
         <div className="field">
           <span>自定义图标 <em>可选</em></span>
@@ -171,6 +283,11 @@ export default function ResourceFormDialog({
             <button className="button button--secondary" type="button" onClick={handleSelectImage} disabled={selectingImage}>
               {selectingImage ? '读取中…' : '选择图片'}
             </button>
+            {type === 'url' && (
+              <button className="button button--secondary" type="button" onClick={handleFetchWebsiteIcon} disabled={fetchingIcon || !draft.path.trim()}>
+                {fetchingIcon ? '获取中…' : '获取站点图标'}
+              </button>
+            )}
           </div>
           {draft.customIcon && (
             <div className="icon-preview">

@@ -8,7 +8,11 @@ interface ResourceCardProps {
   inspection?: PathInspection | null
   sortable: boolean
   dragging: boolean
+  selectionMode: boolean
+  selected: boolean
   onLaunch: (item: LauncherItem) => void
+  onToggleSelect: (item: LauncherItem) => void
+  onToggleFavorite: (item: LauncherItem) => void
   onEdit: (item: LauncherItem) => void
   onDelete: (item: LauncherItem) => void
   onDragStart: (item: LauncherItem) => void
@@ -35,7 +39,11 @@ export default function ResourceCard({
   inspection,
   sortable,
   dragging,
+  selectionMode,
+  selected,
   onLaunch,
+  onToggleSelect,
+  onToggleFavorite,
   onEdit,
   onDelete,
   onDragStart,
@@ -57,7 +65,7 @@ export default function ResourceCard({
 
   return (
     <article
-      className={`resource-card resource-card--${item.type}${dragging ? ' is-dragging' : ''}${isMissing ? ' is-missing' : ''}`}
+      className={`resource-card resource-card--${item.type}${dragging ? ' is-dragging' : ''}${isMissing ? ' is-missing' : ''}${selected ? ' is-selected' : ''}`}
       draggable={sortable}
       onDragStart={(event) => {
         event.dataTransfer.effectAllowed = 'move'
@@ -81,20 +89,41 @@ export default function ResourceCard({
     >
       <div className="card-topline">
         <span className={`type-label type-label--${item.type}`}>{TYPE_LABELS[item.type]}</span>
-        <details className="card-menu" ref={menuRef}>
-          <summary role="button" aria-label={`管理${displayName}`} title="编辑或删除">…</summary>
-          <div className="card-menu__panel">
-            <button type="button" onClick={() => { closeMenu(); onEdit(item) }}>编辑</button>
-            <button type="button" className="danger-text" onClick={() => { closeMenu(); onDelete(item) }}>删除</button>
-          </div>
-        </details>
+        <div className="card-utilities">
+          {selectionMode ? (
+            <input
+              type="checkbox"
+              checked={selected}
+              onChange={() => onToggleSelect(item)}
+              aria-label={`选择${displayName}`}
+            />
+          ) : (
+            <>
+              <button
+                type="button"
+                className={`favorite-button${item.favorite ? ' is-favorite' : ''}`}
+                onClick={() => onToggleFavorite(item)}
+                aria-label={item.favorite ? `取消收藏${displayName}` : `收藏${displayName}`}
+                title={item.favorite ? '取消收藏' : '收藏'}
+              >★</button>
+              <details className="card-menu" ref={menuRef}>
+                <summary role="button" aria-label={`管理${displayName}`} title="编辑或删除">…</summary>
+                <div className="card-menu__panel">
+                  <button type="button" onClick={() => { closeMenu(); onEdit(item) }}>编辑</button>
+                  <button type="button" className="danger-text" onClick={() => { closeMenu(); onDelete(item) }}>删除</button>
+                </div>
+              </details>
+            </>
+          )}
+        </div>
       </div>
 
       <button
         className="card-launch"
         type="button"
-        onClick={() => onLaunch(item)}
-        aria-label={`${isMissing ? '已失效，' : ''}启动${displayName}`}
+        onClick={() => selectionMode ? onToggleSelect(item) : onLaunch(item)}
+        aria-label={selectionMode ? `${selected ? '取消选择' : '选择'}${displayName}` : `${isMissing ? '已失效，' : ''}启动${displayName}`}
+        data-resource-id={item.id}
         title={item.path}
       >
         <span className={`resource-icon${image ? ' has-image' : ''}`} aria-hidden="true">

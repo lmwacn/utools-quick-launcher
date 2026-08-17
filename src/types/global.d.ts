@@ -42,13 +42,18 @@ interface PluginEnterAction {
 interface QuickLauncherServices {
   openPath: (targetPath: string) => Promise<ServiceResult>
   openExternal: (url: string) => Promise<ServiceResult>
-  runCommand: (command: string) => Promise<ServiceResult<{ pid?: number; shell?: string; platform?: string }>>
+  runCommand: (command: string, options?: {
+    mode?: 'background' | 'terminal'
+    workingDirectory?: string
+    environment?: Record<string, string>
+  }) => Promise<ServiceResult<{ pid?: number; shell?: string; platform?: string }>>
   selectFile: (type: 'file' | 'folder') => Promise<string[] | null>
   inspectPath: (targetPath: string) => PathInspection
   readTextFile: (targetPath: string) => ServiceResult<string>
   writeTextFile: (targetPath: string, content: string) => ServiceResult
   selectImage: () => Promise<string[] | null>
   readFileAsBase64: (targetPath: string) => ServiceResult<string>
+  fetchFavicon: (url: string) => Promise<ServiceResult<string>>
   getPlatform: () => string
 }
 

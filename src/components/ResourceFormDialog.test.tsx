@@ -16,6 +16,7 @@ describe('资源编辑表单', () => {
         onSubmit={onSubmit}
         onSelectImage={async () => null}
         onSelectPath={async () => '/new/file.txt'}
+        onFetchWebsiteIcon={async () => null}
       />
     )
 
@@ -40,10 +41,42 @@ describe('资源编辑表单', () => {
         onSubmit={vi.fn()}
         onSelectImage={async () => null}
         onSelectPath={async () => null}
+        onFetchWebsiteIcon={async () => null}
       />
     )
 
     expect(screen.getByRole('combobox', { name: '运行平台' })).toHaveValue('darwin')
     expect(screen.getByLabelText('命令')).toHaveAttribute('placeholder', '例如：open -a "Visual Studio Code"')
+  })
+
+  it('可以通过模板配置终端命令和高级参数', async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn()
+    render(
+      <ResourceFormDialog
+        type="cmd"
+        currentPlatform="darwin"
+        onClose={vi.fn()}
+        onSubmit={onSubmit}
+        onSelectImage={async () => null}
+        onSelectPath={async () => '/projects/demo'}
+        onFetchWebsiteIcon={async () => null}
+      />
+    )
+
+    await user.type(screen.getByLabelText(/启动名称/), '开发服务')
+    await user.click(screen.getByRole('button', { name: '启动开发服务' }))
+    await user.selectOptions(screen.getByLabelText('运行方式'), 'terminal')
+    await user.click(screen.getByText(/高级设置/))
+    await user.click(screen.getByRole('button', { name: '选择目录' }))
+    await user.type(screen.getByLabelText(/环境变量/), 'NODE_ENV=development')
+    await user.click(screen.getByRole('button', { name: '添加资源' }))
+
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
+      path: 'npm run dev',
+      commandMode: 'terminal',
+      workingDirectory: '/projects/demo',
+      environment: 'NODE_ENV=development'
+    }))
   })
 })

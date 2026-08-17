@@ -1,0 +1,25 @@
+{
+  "_id": "launcher-items",
+  "_rev": "1-legacy-fixture",
+  "data": [
+    {
+      "id": "legacy-folder",
+      "type": "folder",
+      "path": "/Users/demo/Projects",
+      "name": "项目"
+    },
+    {
+      "id": "legacy-url",
+      "type": "url",
+      "path": "https://example.com",
+      "name": "工作台",
+      "displayName": "公司工作台"
+    },
+    {
+      "id": "legacy-command",
+      "type": "cmd",
+      "path": "echo legacy",
+      "name": "旧版命令"
+    }
+  ]
+}
