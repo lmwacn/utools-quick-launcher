@@ -1,4 +1,4 @@
-import type { TrashedItem } from '../adapters/localState'
+import { MAX_TRASH_ITEMS, type TrashedItem } from '../adapters/localState'
 import Modal from './Modal'
 
 export default function TrashDialog({
@@ -13,7 +13,7 @@ export default function TrashDialog({
   onEmpty: () => void
 }) {
   return (
-    <Modal title="回收站" description="最多保留最近删除的 50 个资源，仅保存在本机" onClose={onClose} size="medium">
+    <Modal title="回收站" description={`最多保留最近删除的 ${MAX_TRASH_ITEMS} 个资源，仅保存在本机`} onClose={onClose} size="medium">
       {items.length ? (
         <div className="trash-list">
           {items.map((entry) => (

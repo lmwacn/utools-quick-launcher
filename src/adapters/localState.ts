@@ -1,9 +1,10 @@
 import type { LauncherItem, UsageMap } from '../types/launcher'
+import { migrateLauncherData, normalizeLauncherItem } from '../domain/launcherItems'
 
 const USAGE_KEY = 'quick-launcher:usage-v1'
 const TRASH_KEY = 'quick-launcher:trash-v1'
 const IMPORT_BACKUP_KEY = 'quick-launcher:import-backup-v1'
-const MAX_TRASH_ITEMS = 12
+export const MAX_TRASH_ITEMS = 12
 
 export interface TrashedItem {
   item: LauncherItem
@@ -29,7 +30,15 @@ function writeJson(key: string, value: unknown): boolean {
 }
 
 export function loadUsage(): UsageMap {
-  return readJson<UsageMap>(USAGE_KEY, {})
+  const raw = readJson<unknown>(USAGE_KEY, {})
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {}
+  const entries = Object.entries(raw).filter(([, value]) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+    const usage = value as Record<string, unknown>
+    return Number.isFinite(usage.count) && Number(usage.count) >= 0
+      && Number.isFinite(usage.lastLaunchedAt) && Number(usage.lastLaunchedAt) >= 0
+  })
+  return Object.fromEntries(entries) as UsageMap
 }
 
 export function recordLaunch(usage: UsageMap, itemId: string): UsageMap {
@@ -46,9 +55,16 @@ export function recordLaunch(usage: UsageMap, itemId: string): UsageMap {
 }
 
 export function loadTrash(): TrashedItem[] {
-  return readJson<TrashedItem[]>(TRASH_KEY, [])
-    .filter((entry) => entry?.item?.id && Number.isFinite(entry.deletedAt))
-    .slice(0, MAX_TRASH_ITEMS)
+  const raw = readJson<unknown>(TRASH_KEY, [])
+  if (!Array.isArray(raw)) return []
+  return raw.flatMap((entry) => {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return []
+    const record = entry as Record<string, unknown>
+    const item = normalizeLauncherItem(record.item)
+    return item && Number.isFinite(record.deletedAt)
+      ? [{ item, deletedAt: Number(record.deletedAt) }]
+      : []
+  }).slice(0, MAX_TRASH_ITEMS)
 }
 
 export function saveTrash(items: TrashedItem[]): TrashedItem[] {
@@ -71,5 +87,5 @@ export function saveImportBackup(items: LauncherItem[]): boolean {
 }
 
 export function loadImportBackup(): LauncherItem[] {
-  return readJson<LauncherItem[]>(IMPORT_BACKUP_KEY, [])
+  return migrateLauncherData(readJson<unknown>(IMPORT_BACKUP_KEY, [])).items
 }

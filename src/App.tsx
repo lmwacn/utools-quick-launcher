@@ -572,6 +572,7 @@ function App() {
         tags={tags}
         selectedTag={selectedTag}
         onTag={setSelectedTag}
+        currentPlatform={currentPlatform}
       />
 
       <section className="content-section" aria-live="polite">
@@ -631,7 +632,7 @@ function App() {
             <div className="empty-mark" aria-hidden="true">+</div>
             <h2>{items.length ? '没有匹配的资源' : '建立你的快速启动库'}</h2>
             <p>{items.length ? '试试其他关键词或资源类型' : '可以添加文件、文件夹、网页和命令，也可直接拖入本地资源。'}</p>
-            {items.length > 0 && <button className="button button--secondary" type="button" onClick={() => { setSearch(''); setFilter('all') }}>清除筛选</button>}
+            {items.length > 0 && <button className="button button--secondary" type="button" onClick={() => { setSearch(''); setFilter('all'); setSelectedTag('') }}>清除筛选</button>}
           </div>
         )}
       </section>

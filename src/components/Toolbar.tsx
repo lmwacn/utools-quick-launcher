@@ -1,5 +1,5 @@
 import type { MouseEvent } from 'react'
-import type { ResourceType } from '../types/launcher'
+import type { CommandPlatform, ResourceType } from '../types/launcher'
 import ResourceGlyph from './ResourceGlyph'
 
 export type FilterType = 'all' | ResourceType | 'favorite' | 'recent' | 'missing'
@@ -22,6 +22,7 @@ interface ToolbarProps {
   tags: string[]
   selectedTag: string
   onTag: (tag: string) => void
+  currentPlatform: CommandPlatform
 }
 
 const FILTERS: Array<{ value: FilterType; label: string }> = [
@@ -52,7 +53,8 @@ export default function Toolbar({
   onHelp,
   tags,
   selectedTag,
-  onTag
+  onTag,
+  currentPlatform
 }: ToolbarProps) {
   const runAndClose = (event: MouseEvent<HTMLButtonElement>, callback: () => void) => {
     callback()
@@ -116,7 +118,7 @@ export default function Toolbar({
           />
           {search && <button type="button" onClick={() => onSearch('')} aria-label="清空搜索">×</button>}
         </label>
-        <kbd>⌘ K</kbd>
+        <kbd>{currentPlatform === 'win32' || currentPlatform === 'linux' ? 'Ctrl K' : '⌘ K'}</kbd>
       </section>
 
       <nav className="filter-tabs" aria-label="资源类型">
