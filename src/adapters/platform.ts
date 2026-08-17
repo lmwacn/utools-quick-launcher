@@ -39,7 +39,11 @@ export async function launchItem(item: LauncherItem): Promise<ServiceResult<unkn
     if (item.platform && item.platform !== 'all' && currentPlatform !== item.platform) {
       return { ok: false, error: `该命令仅支持 ${PLATFORM_LABELS[item.platform]}，当前系统为 ${PLATFORM_LABELS[currentPlatform]}` }
     }
-    return window.services.runCommand(item.path)
+    return window.services.runCommand(item.path, {
+      mode: item.commandMode ?? 'background',
+      workingDirectory: item.workingDirectory,
+      environment: item.environment
+    })
   }
   return window.services.openPath(item.path)
 }

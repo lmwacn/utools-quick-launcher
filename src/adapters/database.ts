@@ -27,7 +27,7 @@ export function saveLauncherItems(items: LauncherItem[]): void {
     _id: LEGACY_DOCUMENT_ID,
     ...(current?._rev ? { _rev: current._rev } : {}),
     data: items,
-    schemaVersion: 2,
+    schemaVersion: 3,
     updatedAt: Math.floor(Date.now() / 1000)
   }
 

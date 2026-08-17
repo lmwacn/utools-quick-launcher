@@ -2,7 +2,7 @@ import type { MouseEvent } from 'react'
 import type { ResourceType } from '../types/launcher'
 import ResourceGlyph from './ResourceGlyph'
 
-export type FilterType = 'all' | ResourceType
+export type FilterType = 'all' | ResourceType | 'favorite' | 'recent' | 'missing'
 
 interface ToolbarProps {
   search: string
@@ -14,15 +14,25 @@ interface ToolbarProps {
   onAddVirtual: (type: 'url' | 'cmd') => void
   onImport: () => void
   onExport: () => void
+  onRestoreImportBackup: () => void
+  onToggleSelection: () => void
+  selectionMode: boolean
+  onTrash: () => void
   onHelp: () => void
+  tags: string[]
+  selectedTag: string
+  onTag: (tag: string) => void
 }
 
 const FILTERS: Array<{ value: FilterType; label: string }> = [
   { value: 'all', label: '全部' },
+  { value: 'favorite', label: '收藏' },
+  { value: 'recent', label: '最近' },
   { value: 'folder', label: '文件夹' },
   { value: 'file', label: '文件' },
   { value: 'url', label: '网页' },
-  { value: 'cmd', label: '命令' }
+  { value: 'cmd', label: '命令' },
+  { value: 'missing', label: '失效' }
 ]
 
 export default function Toolbar({
@@ -35,7 +45,14 @@ export default function Toolbar({
   onAddVirtual,
   onImport,
   onExport,
-  onHelp
+  onRestoreImportBackup,
+  onToggleSelection,
+  selectionMode,
+  onTrash,
+  onHelp,
+  tags,
+  selectedTag,
+  onTag
 }: ToolbarProps) {
   const runAndClose = (event: MouseEvent<HTMLButtonElement>, callback: () => void) => {
     callback()
@@ -78,6 +95,9 @@ export default function Toolbar({
             <div className="dropdown-panel dropdown-panel--compact">
               <button type="button" onClick={(event) => runAndClose(event, onImport)}>导入数据</button>
               <button type="button" onClick={(event) => runAndClose(event, onExport)}>导出备份</button>
+              <button type="button" onClick={(event) => runAndClose(event, onRestoreImportBackup)}>恢复导入前备份</button>
+              <button type="button" onClick={(event) => runAndClose(event, onToggleSelection)}>{selectionMode ? '退出批量管理' : '批量管理'}</button>
+              <button type="button" onClick={(event) => runAndClose(event, onTrash)}>回收站</button>
               <button type="button" onClick={(event) => runAndClose(event, onHelp)}>使用帮助</button>
             </div>
           </details>
@@ -112,6 +132,15 @@ export default function Toolbar({
           </button>
         ))}
       </nav>
+      {tags.length > 0 && (
+        <label className="tag-filter">
+          <span>标签</span>
+          <select value={selectedTag} onChange={(event) => onTag(event.target.value)}>
+            <option value="">全部标签</option>
+            {tags.map((tag) => <option key={tag} value={tag}>{tag}</option>)}
+          </select>
+        </label>
+      )}
     </>
   )
 }

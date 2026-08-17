@@ -1,14 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import {
+  applyImport,
   itemFromDraft,
   matchesSearch,
   mergeImportedItems,
   migrateLauncherData,
   normalizeUrl,
+  prepareImport,
   reorderItems,
   validateDraft
 } from './launcherItems'
 import type { LauncherItem } from '../types/launcher'
+import legacyFixture from '../test/fixtures/legacy-v1.json'
 
 const legacyItem: LauncherItem = {
   id: 'old-1',
@@ -20,6 +23,12 @@ const legacyItem: LauncherItem = {
 }
 
 describe('历史数据兼容', () => {
+  it('完整读取从 1.x 数据结构整理的回归样本', () => {
+    const result = migrateLauncherData(legacyFixture)
+    expect(result.items).toHaveLength(3)
+    expect(result.items[2]).toMatchObject({ type: 'cmd', path: 'echo legacy' })
+  })
+
   it('保留旧 launcher-items.data 的字段', () => {
     const result = migrateLauncherData({
       _id: 'launcher-items',
@@ -93,6 +102,39 @@ describe('资源业务规则', () => {
     expect(compatibleCommand.platform).toBeUndefined()
   })
 
+  it('保存命令运行方式、工作目录、环境变量和标签', () => {
+    const item = itemFromDraft({
+      type: 'cmd',
+      path: 'npm run dev',
+      name: '开发服务',
+      displayName: '',
+      customIcon: '',
+      platform: 'darwin',
+      commandMode: 'terminal',
+      workingDirectory: '/projects/demo',
+      environment: 'NODE_ENV=development\nPORT=5173',
+      tags: '开发, 常用'
+    })
+
+    expect(item).toMatchObject({
+      commandMode: 'terminal',
+      workingDirectory: '/projects/demo',
+      environment: { NODE_ENV: 'development', PORT: '5173' },
+      tags: ['开发', '常用']
+    })
+  })
+
+  it('拒绝格式错误的环境变量', () => {
+    expect(validateDraft({
+      type: 'cmd',
+      name: '测试',
+      path: 'echo ok',
+      displayName: '',
+      customIcon: '',
+      environment: 'INVALID LINE'
+    })).toContain('环境变量格式错误')
+  })
+
   it('导入时按 ID 或类型+路径去重', () => {
     const result = mergeImportedItems([legacyItem], [
       legacyItem,
@@ -109,5 +151,32 @@ describe('资源业务规则', () => {
     expect(reordered.map((item) => item.id)).toEqual(['cmd', 'old-1'])
     expect(matchesSearch(command, 'npm')).toBe(true)
     expect(matchesSearch(legacyItem, '公司')).toBe(true)
+    expect(matchesSearch(legacyItem, 'gzt')).toBe(true)
+  })
+
+  it('导入前识别冲突并支持保留两者', () => {
+    const preview = prepareImport([legacyItem], [
+      { ...legacyItem, name: '新版工作台' },
+      { id: 'cmd-new', type: 'cmd', path: 'npm test', name: '运行测试' }
+    ])
+    expect(preview.conflicts).toHaveLength(1)
+    expect(preview.newItems[0]).toMatchObject({ id: 'cmd-new', trusted: false })
+
+    const result = applyImport([legacyItem], preview, 'keep-both')
+    expect(result).toHaveLength(3)
+    expect(result.filter((item) => item.type === 'url')).toHaveLength(2)
+  })
+
+  it('导入时将命令高级配置差异识别为冲突', () => {
+    const current: LauncherItem = {
+      id: 'cmd-advanced',
+      type: 'cmd',
+      path: 'npm run dev',
+      name: '开发服务',
+      workingDirectory: '/projects/old'
+    }
+    const preview = prepareImport([current], [{ ...current, workingDirectory: '/projects/new' }])
+    expect(preview.conflicts).toHaveLength(1)
+    expect(preview.duplicates).toBe(0)
   })
 })

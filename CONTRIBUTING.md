@@ -13,6 +13,7 @@
 ```bash
 npm install
 npm run check
+npm run release:check
 ```
 
 与本地能力有关的变更还应在 uTools 开发者工具中验证。
@@ -24,6 +25,7 @@ npm run check
 - React 组件不直接引入 Node.js 或 Electron。
 - 不打包、压缩或混淆 `public/preload` 中的代码。
 - 改变用户数据时必须补充迁移测试和回滚说明。
+- 新增同步字段必须保持可选，并使用 `src/test/fixtures/legacy-v1.json` 验证旧数据。
 - 界面交互必须考虑键盘焦点、深色模式和窄窗口。
 
 ## 提交与 Pull Request
@@ -32,6 +34,8 @@ npm run check
 - 一个 PR 聚焦一个主题，不夹带无关重构。
 - PR 说明中列出用户可见变化、数据影响和验证结果。
 - 界面变更建议提供截图。
+
+提交贡献即表示你同意按照 MIT License 授权该贡献，详见 [LICENSE](./LICENSE)。
 
 ## 安全
 

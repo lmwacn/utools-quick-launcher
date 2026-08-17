@@ -30,4 +30,19 @@ describe('快速启动首页', () => {
     await user.type(screen.getByRole('searchbox'), '不存在')
     expect(screen.getByText('没有匹配的资源')).toBeInTheDocument()
   })
+
+  it('可以收藏资源并在收藏筛选中查看', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByLabelText('添加资源'))
+    await user.click(screen.getByRole('button', { name: '添加网页' }))
+    await user.type(screen.getByLabelText(/启动名称/), '收藏站点')
+    await user.type(screen.getByLabelText('网址'), 'favorite.example.com')
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: '添加资源' }))
+    await user.click(screen.getByRole('button', { name: '收藏收藏站点' }))
+    await user.click(screen.getByRole('button', { name: /收藏1/ }))
+
+    expect(screen.getByRole('button', { name: '启动收藏站点' })).toBeInTheDocument()
+  })
 })

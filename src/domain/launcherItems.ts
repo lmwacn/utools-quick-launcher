@@ -1,15 +1,20 @@
 import {
+  COMMAND_MODES,
   COMMAND_PLATFORMS,
   RESOURCE_TYPES,
   type ImportResult,
+  type ImportPreview,
+  type ImportStrategy,
   type LauncherDraft,
   type LauncherItem,
   type MigrationResult,
   type ResourceType
 } from '../types/launcher'
+import { match } from 'pinyin-pro'
 
 const RESOURCE_TYPE_SET = new Set<string>(RESOURCE_TYPES)
 const COMMAND_PLATFORM_SET = new Set<string>(COMMAND_PLATFORMS)
+const COMMAND_MODE_SET = new Set<string>(COMMAND_MODES)
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null
@@ -18,6 +23,40 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 
 function asText(value: unknown): string {
   return typeof value === 'string' ? value.trim() : ''
+}
+
+function normalizeTags(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return [...new Set(value.map(asText).filter(Boolean))].slice(0, 20)
+}
+
+function normalizeEnvironment(value: unknown): Record<string, string> | undefined {
+  const record = asRecord(value)
+  if (!record) return undefined
+  const entries: Array<[string, string]> = []
+  for (const [key, entry] of Object.entries(record)) {
+    if (entries.length >= 30) break
+    if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(key) && typeof entry === 'string') entries.push([key, entry])
+  }
+  return entries.length ? Object.fromEntries(entries) : undefined
+}
+
+export function parseEnvironment(value: string): Record<string, string> {
+  const environment: Record<string, string> = {}
+  for (const line of value.split(/\r?\n/)) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    const separator = trimmed.indexOf('=')
+    if (separator < 1) throw new Error(`环境变量格式错误：${trimmed}`)
+    const key = trimmed.slice(0, separator).trim()
+    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) throw new Error(`环境变量名称无效：${key}`)
+    environment[key] = trimmed.slice(separator + 1)
+  }
+  return environment
+}
+
+export function formatEnvironment(value: LauncherItem['environment']): string {
+  return value ? Object.entries(value).map(([key, entry]) => `${key}=${entry}`).join('\n') : ''
 }
 
 function createId(): string {
@@ -42,6 +81,10 @@ export function normalizeLauncherItem(value: unknown): LauncherItem | null {
   const displayName = asText(record.displayName)
   const name = asText(record.name) || displayName
   const platform = asText(record.platform)
+  const commandMode = asText(record.commandMode)
+  const workingDirectory = asText(record.workingDirectory)
+  const tags = normalizeTags(record.tags)
+  const environment = normalizeEnvironment(record.environment)
 
   if (!path || !name) return null
 
@@ -55,10 +98,27 @@ export function normalizeLauncherItem(value: unknown): LauncherItem | null {
       ? { platform: platform as LauncherItem['platform'] }
       : {}),
     ...(displayName ? { displayName } : {}),
-    ...(asText(record.customIcon) ? { customIcon: asText(record.customIcon) } : {})
+    ...(asText(record.customIcon) ? { customIcon: asText(record.customIcon) } : {}),
+    ...(tags.length ? { tags } : {}),
+    ...(record.favorite === true ? { favorite: true } : {}),
+    ...(record.trusted === false ? { trusted: false } : {})
   }
 
-  if (type !== 'cmd' || !COMMAND_PLATFORM_SET.has(platform) || platform === 'all') delete item.platform
+  if (type === 'cmd') {
+    if (!COMMAND_PLATFORM_SET.has(platform) || platform === 'all') delete item.platform
+    if (COMMAND_MODE_SET.has(commandMode) && commandMode !== 'background') item.commandMode = commandMode as LauncherItem['commandMode']
+    else delete item.commandMode
+    if (workingDirectory) item.workingDirectory = workingDirectory
+    else delete item.workingDirectory
+    if (environment) item.environment = environment
+    else delete item.environment
+  } else {
+    delete item.platform
+    delete item.commandMode
+    delete item.workingDirectory
+    delete item.environment
+    delete item.trusted
+  }
   return item
 }
 
@@ -103,6 +163,13 @@ export function validateDraft(draft: LauncherDraft): string | null {
       return '请输入有效网址'
     }
   }
+  if (draft.type === 'cmd') {
+    try {
+      parseEnvironment(draft.environment ?? '')
+    } catch (error) {
+      return error instanceof Error ? error.message : '环境变量格式错误'
+    }
+  }
   return null
 }
 
@@ -112,6 +179,7 @@ export function itemFromDraft(draft: LauncherDraft, original?: LauncherItem): La
     ...(draft.displayName.trim() ? { displayName: draft.displayName.trim() } : {}),
     ...(draft.customIcon.trim() ? { customIcon: draft.customIcon.trim() } : {})
   }
+  const tags = [...new Set((draft.tags ?? '').split(/[,，]/).map((tag) => tag.trim()).filter(Boolean))].slice(0, 20)
 
   const item: LauncherItem = {
     ...(original ?? {}),
@@ -125,8 +193,25 @@ export function itemFromDraft(draft: LauncherDraft, original?: LauncherItem): La
     ...(!draft.customIcon.trim() && original?.customIcon ? { customIcon: undefined } : {})
   }
 
-  if (item.type === 'cmd' && draft.platform && draft.platform !== 'all') item.platform = draft.platform
-  else delete item.platform
+  if (tags.length) item.tags = tags
+  else delete item.tags
+
+  if (item.type === 'cmd') {
+    if (draft.platform && draft.platform !== 'all') item.platform = draft.platform
+    else delete item.platform
+    if (draft.commandMode && draft.commandMode !== 'background') item.commandMode = draft.commandMode
+    else delete item.commandMode
+    if (draft.workingDirectory?.trim()) item.workingDirectory = draft.workingDirectory.trim()
+    else delete item.workingDirectory
+    const environment = parseEnvironment(draft.environment ?? '')
+    if (Object.keys(environment).length) item.environment = environment
+    else delete item.environment
+  } else {
+    delete item.platform
+    delete item.commandMode
+    delete item.workingDirectory
+    delete item.environment
+  }
 
   return item
 }
@@ -157,6 +242,71 @@ export function mergeImportedItems(current: LauncherItem[], input: unknown): Imp
   }
 }
 
+function importKey(item: LauncherItem): string {
+  return `${item.type}:${item.path}`.toLocaleLowerCase()
+}
+
+function sameImportContent(left: LauncherItem, right: LauncherItem): boolean {
+  const comparable = (item: LauncherItem) => ({
+    type: item.type,
+    path: item.path,
+    name: item.name,
+    displayName: item.displayName,
+    customIcon: item.customIcon,
+    platform: item.platform,
+    commandMode: item.commandMode,
+    workingDirectory: item.workingDirectory,
+    environment: item.environment,
+    tags: item.tags,
+    favorite: item.favorite
+  })
+  return JSON.stringify(comparable(left)) === JSON.stringify(comparable(right))
+}
+
+export function prepareImport(current: LauncherItem[], input: unknown): ImportPreview {
+  const migration = migrateLauncherData(input)
+  const byId = new Map(current.map((item) => [item.id, item]))
+  const byPath = new Map(current.map((item) => [importKey(item), item]))
+  const seenImportIds = new Set<string>()
+  const seenImportPaths = new Set<string>()
+  const newItems: LauncherItem[] = []
+  const conflicts: ImportPreview['conflicts'] = []
+  let duplicates = 0
+
+  for (const sourceItem of migration.items) {
+    const incoming = { ...sourceItem, ...(sourceItem.type === 'cmd' ? { trusted: false } : {}) }
+    const pathKey = importKey(incoming)
+    if (seenImportIds.has(incoming.id) || seenImportPaths.has(pathKey)) {
+      duplicates += 1
+      continue
+    }
+    seenImportIds.add(incoming.id)
+    seenImportPaths.add(pathKey)
+    const existing = byId.get(incoming.id) ?? byPath.get(pathKey)
+    if (!existing) {
+      newItems.push(incoming)
+      continue
+    }
+    if (sameImportContent(existing, incoming)) duplicates += 1
+    else conflicts.push({ existing, incoming })
+  }
+
+  return { newItems, conflicts, duplicates, discarded: migration.discarded }
+}
+
+export function applyImport(current: LauncherItem[], preview: ImportPreview, strategy: ImportStrategy): LauncherItem[] {
+  const next = [...current]
+  if (strategy === 'overwrite') {
+    for (const conflict of preview.conflicts) {
+      const index = next.findIndex((item) => item.id === conflict.existing.id)
+      if (index >= 0) next[index] = { ...conflict.incoming, id: conflict.existing.id }
+    }
+  } else if (strategy === 'keep-both') {
+    for (const conflict of preview.conflicts) next.unshift({ ...conflict.incoming, id: createId() })
+  }
+  return [...preview.newItems, ...next]
+}
+
 export function reorderItems(items: LauncherItem[], sourceId: string, targetId: string): LauncherItem[] {
   const sourceIndex = items.findIndex((item) => item.id === sourceId)
   const targetIndex = items.findIndex((item) => item.id === targetId)
@@ -171,7 +321,16 @@ export function reorderItems(items: LauncherItem[], sourceId: string, targetId: 
 export function matchesSearch(item: LauncherItem, keyword: string): boolean {
   const query = keyword.trim().toLocaleLowerCase()
   if (!query) return true
-  return [item.name, item.displayName, item.path, item.type]
+  return [item.name, item.displayName, item.path, item.type, ...(item.tags ?? [])]
     .filter((value): value is string => typeof value === 'string')
-    .some((value) => value.toLocaleLowerCase().includes(query))
+    .some((value) => {
+      const candidate = value.toLocaleLowerCase()
+      if (candidate.includes(query) || match(value, query)) return true
+      let queryIndex = 0
+      for (const character of candidate) {
+        if (character === query[queryIndex]) queryIndex += 1
+        if (queryIndex === query.length) return true
+      }
+      return false
+    })
 }
