@@ -91,20 +91,23 @@ function App() {
 
   const performLaunch = useCallback(async (item: LauncherItem, fromFeature = false) => {
     const result = await launchItem(item)
+    const itemName = item.displayName || item.name
     if (!result.ok) {
       const message = result.error || '启动失败'
       showToast({ text: message, tone: 'error' }, 6000)
-      if (fromFeature) notify(message)
+      if (item.type === 'cmd') notify(`命令“${itemName}”启动失败：${message}`)
+      else if (fromFeature) notify(message)
       return
     }
 
     setUsage((current) => recordLaunch(current, item.id))
+    if (item.type === 'cmd') notify(`命令“${itemName}”已成功启动`)
 
     if (window.utools) {
       window.utools.hideMainWindow()
       if (fromFeature) window.utools.outPlugin()
     } else {
-      showToast({ text: `已启动 ${item.displayName || item.name}`, tone: 'success' })
+      showToast({ text: `已启动 ${itemName}`, tone: 'success' })
     }
   }, [showToast])
 

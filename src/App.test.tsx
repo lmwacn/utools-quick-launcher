@@ -118,4 +118,89 @@ describe('快速启动首页', () => {
 
     expect(runCommand).toHaveBeenCalledWith('echo imported', expect.objectContaining({ mode: 'background' }))
   })
+
+  it('命令启动成功后显示系统通知', async () => {
+    const user = userEvent.setup()
+    const showNotification = vi.fn()
+    window.utools = {
+      db: { get: vi.fn(() => null), put: vi.fn(() => ({ ok: true })) },
+      getFeatures: vi.fn(() => []),
+      setFeature: vi.fn(),
+      removeFeature: vi.fn(() => true),
+      onPluginEnter: vi.fn(),
+      onPluginOut: vi.fn(),
+      getFileIcon: vi.fn(() => ''),
+      showNotification,
+      hideMainWindow: vi.fn(),
+      outPlugin: vi.fn(),
+      showOpenDialog: vi.fn(() => null),
+      showSaveDialog: vi.fn(() => null)
+    }
+    window.services = {
+      openPath: vi.fn(async () => ({ ok: true })),
+      openExternal: vi.fn(async () => ({ ok: true })),
+      runCommand: vi.fn(async () => ({ ok: true })),
+      selectFile: vi.fn(async () => null),
+      inspectPath: vi.fn(() => ({ exists: true, isDirectory: false })),
+      readTextFile: vi.fn(() => ({ ok: false })),
+      writeTextFile: vi.fn(() => ({ ok: true })),
+      selectImage: vi.fn(async () => null),
+      readFileAsBase64: vi.fn(() => ({ ok: false })),
+      fetchFavicon: vi.fn(async () => ({ ok: false })),
+      getPlatform: vi.fn(() => 'darwin')
+    }
+    render(<App />)
+
+    await user.click(screen.getByLabelText('添加资源'))
+    await user.click(screen.getByRole('button', { name: '添加命令' }))
+    await user.type(screen.getByLabelText(/启动名称/), '同步代码')
+    await user.type(screen.getByLabelText('命令'), 'git pull')
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: '添加资源' }))
+    await user.click(screen.getByRole('button', { name: '启动同步代码' }))
+
+    expect(showNotification).toHaveBeenCalledWith('命令“同步代码”已成功启动')
+  })
+
+  it('命令启动失败后在系统通知中显示原因', async () => {
+    const user = userEvent.setup()
+    const showNotification = vi.fn()
+    window.utools = {
+      db: { get: vi.fn(() => null), put: vi.fn(() => ({ ok: true })) },
+      getFeatures: vi.fn(() => []),
+      setFeature: vi.fn(),
+      removeFeature: vi.fn(() => true),
+      onPluginEnter: vi.fn(),
+      onPluginOut: vi.fn(),
+      getFileIcon: vi.fn(() => ''),
+      showNotification,
+      hideMainWindow: vi.fn(),
+      outPlugin: vi.fn(),
+      showOpenDialog: vi.fn(() => null),
+      showSaveDialog: vi.fn(() => null)
+    }
+    window.services = {
+      openPath: vi.fn(async () => ({ ok: true })),
+      openExternal: vi.fn(async () => ({ ok: true })),
+      runCommand: vi.fn(async () => ({ ok: false, error: '命令已退出，代码 1' })),
+      selectFile: vi.fn(async () => null),
+      inspectPath: vi.fn(() => ({ exists: true, isDirectory: false })),
+      readTextFile: vi.fn(() => ({ ok: false })),
+      writeTextFile: vi.fn(() => ({ ok: true })),
+      selectImage: vi.fn(async () => null),
+      readFileAsBase64: vi.fn(() => ({ ok: false })),
+      fetchFavicon: vi.fn(async () => ({ ok: false })),
+      getPlatform: vi.fn(() => 'darwin')
+    }
+    render(<App />)
+
+    await user.click(screen.getByLabelText('添加资源'))
+    await user.click(screen.getByRole('button', { name: '添加命令' }))
+    await user.type(screen.getByLabelText(/启动名称/), '失败命令')
+    await user.type(screen.getByLabelText('命令'), 'exit 1')
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: '添加资源' }))
+    await user.click(screen.getByRole('button', { name: '启动失败命令' }))
+
+    expect(showNotification).toHaveBeenCalledWith('命令“失败命令”启动失败：命令已退出，代码 1')
+    expect(await screen.findByRole('alert')).toHaveTextContent('命令已退出，代码 1')
+  })
 })
