@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import '../main.css'
+import App from '../App'
 import ResourceCard from './ResourceCard'
 import TrashDialog from './TrashDialog'
 
@@ -66,5 +67,20 @@ describe('视觉回归', () => {
     expect(getComputedStyle(restore).flexShrink).toBe('0')
     expect(getComputedStyle(path).textOverflow).toBe('ellipsis')
     expect(getComputedStyle(textGroup).overflow).toBe('hidden')
+  })
+
+  it('顶部快捷键和操作按钮与搜索框等高且省略号居中', () => {
+    render(<App />)
+
+    const search = screen.getByRole('searchbox')
+    const shortcut = screen.getByText('⌘ K')
+    const addButton = screen.getByLabelText('添加资源')
+    const moreButton = screen.getByLabelText('更多操作')
+
+    expect(getComputedStyle(search).height).toBe('42px')
+    expect(getComputedStyle(shortcut).height).toBe('42px')
+    expect(getComputedStyle(addButton).height).toBe('42px')
+    expect(getComputedStyle(moreButton).height).toBe('42px')
+    expect(getComputedStyle(moreButton).paddingBottom).toBe('4px')
   })
 })

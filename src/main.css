@@ -127,6 +127,10 @@ input:disabled {
   gap: 9px;
 }
 
+.header-actions .button {
+  height: 42px;
+}
+
 .button {
   min-height: 38px;
   padding: 8px 15px;
@@ -164,10 +168,14 @@ input:disabled {
   background: var(--surface-soft);
 }
 
-.more-button {
-  width: 40px;
-  padding-inline: 0;
+.dropdown > summary.more-button {
+  display: flex;
+  width: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0 4px;
   font-size: 19px;
+  line-height: 1;
 }
 
 .dropdown {
@@ -327,13 +335,17 @@ input:disabled {
 }
 
 .search-row kbd {
-  padding: 5px 8px;
+  display: grid;
+  width: 52px;
+  height: 42px;
+  padding: 0 8px;
   border: 1px solid var(--line-strong);
   border-bottom-width: 2px;
   border-radius: 7px;
   background: var(--surface);
   color: var(--text-muted);
   font: 11px/1.2 inherit;
+  place-items: center;
   white-space: nowrap;
 }
 
