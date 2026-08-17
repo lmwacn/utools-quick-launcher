@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "pinyin-pro": "3.29.2",
-    "react": "19.2.3",
+    "react": "19.2.8",
     "react-dom": "19.2.3"
   },
   "devDependencies": {
