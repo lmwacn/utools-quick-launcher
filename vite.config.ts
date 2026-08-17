@@ -9,7 +9,6 @@ export default defineConfig({
       name: 'include-license-files',
       generateBundle() {
         this.emitFile({ type: 'asset', fileName: 'LICENSE', source: readFileSync('LICENSE', 'utf8') })
-        this.emitFile({ type: 'asset', fileName: 'NOTICE', source: readFileSync('NOTICE', 'utf8') })
       }
     }
   ],

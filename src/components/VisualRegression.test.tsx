@@ -81,6 +81,7 @@ describe('视觉回归', () => {
     expect(getComputedStyle(shortcut).height).toBe('42px')
     expect(getComputedStyle(addButton).height).toBe('42px')
     expect(getComputedStyle(moreButton).height).toBe('42px')
-    expect(getComputedStyle(moreButton).paddingBottom).toBe('4px')
+    expect(getComputedStyle(moreButton).paddingBottom).toBe('0px')
+    expect(moreButton).toHaveTextContent('⋯')
   })
 })

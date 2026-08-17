@@ -35,7 +35,7 @@ npm run release:check
 - PR 说明中列出用户可见变化、数据影响和验证结果。
 - 界面变更建议提供截图。
 
-提交贡献即表示你同意按照 Apache License 2.0 授权该贡献。许可证包含明确的版权与专利授权条款，详见 [LICENSE](./LICENSE)。
+提交贡献即表示你同意按照 MIT License 授权该贡献，详见 [LICENSE](./LICENSE)。
 
 ## 安全
 

@@ -1,6 +1,11 @@
 # 快速启动
 
+[![CI](https://github.com/lmwacn/utools-quick-launcher/actions/workflows/ci.yml/badge.svg)](https://github.com/lmwacn/utools-quick-launcher/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 一款以用户体验为中心的 uTools 资源启动器，统一管理文件、文件夹、网页和系统命令。
+
+![快速启动主界面](./docs/qa/search-header-after.png)
 
 ## 主要功能
 
@@ -13,6 +18,23 @@
 - 支持站点图标、自定义图标压缩、批量操作、导入冲突预览、回收站和失效路径修复。
 - 支持浅色/深色主题、键盘导航、窄窗口和减少动画偏好。
 - 兼容 1.0.4 及更早版本的 `launcher-items` 数据。
+
+## 安装与使用
+
+### 安装
+
+- 应用市场：正式上架后，在 uTools 应用市场搜索“快速启动”。
+- 源码体验：克隆仓库并按下方开发环境说明运行，然后在 uTools 开发者工具中接入 `public/plugin.json`。
+- 发布产物：版本发布后可从 [GitHub Releases](https://github.com/lmwacn/utools-quick-launcher/releases) 下载。
+
+### 快速开始
+
+1. 在 uTools 中输入“快速启动”、`ksqd` 或 `launch` 打开插件。
+2. 点击“添加资源”，选择文件、文件夹、网页或命令。
+3. 为资源设置名称、标签、图标和运行选项，然后保存。
+4. 可在插件内搜索，也可直接从 uTools 搜索框运行自动注册的动态指令。
+
+支持 Windows、macOS 和 Linux。命令使用当前用户权限执行；从外部导入的命令首次运行前会显示完整内容并请求确认。
 
 ## 技术栈
 
@@ -98,4 +120,4 @@ public/
 
 ## 许可证
 
-本项目采用 [Apache License 2.0](./LICENSE)，版权与归属信息见 [NOTICE](./NOTICE)。
+本项目采用 [MIT License](./LICENSE)。

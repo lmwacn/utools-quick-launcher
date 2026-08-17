@@ -4,7 +4,7 @@ import process from 'node:process'
 
 const root = process.cwd()
 const dist = path.join(root, 'dist')
-const requiredFiles = ['index.html', 'plugin.json', 'logo.png', 'logo.svg', 'preload/services.js', 'LICENSE', 'NOTICE']
+const requiredFiles = ['index.html', 'plugin.json', 'logo.png', 'logo.svg', 'preload/services.js', 'LICENSE']
 
 function assert(condition, message) {
   if (!condition) throw new Error(message)

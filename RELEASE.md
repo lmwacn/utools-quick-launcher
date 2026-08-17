@@ -12,7 +12,7 @@ npm run release:check
 - `package.json` 与 `plugin.json` 版本一致。
 - 插件标识仍为 `zqbyq8zn`。
 - PNG Logo 至少为 256×256。
-- `dist` 包含 preload、Logo、Apache-2.0 `LICENSE` 和 `NOTICE`。
+- `dist` 包含 preload、Logo 和 MIT `LICENSE`。
 - 发布目录没有 source map，且总体积小于 5 MB。
 
 ## uTools 人工验收
