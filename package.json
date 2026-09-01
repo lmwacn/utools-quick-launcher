@@ -34,7 +34,7 @@
     "globals": "17.11.0",
     "jsdom": "27.0.1",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.67.0",
+    "typescript-eslint": "8.68.0",
     "utools-api-types": "7.5.1",
     "vite": "8.2.1",
     "vitest": "4.1.10"
