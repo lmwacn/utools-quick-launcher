@@ -27,7 +27,6 @@
 
 - 应用市场：正式上架后，在 uTools 应用市场搜索“快速启动”。
 - 源码体验：克隆仓库并按下方开发环境说明运行，然后在 uTools 开发者工具中接入 `public/plugin.json`。
-- 发布产物：版本发布后可从 [GitHub Releases](https://github.com/lmwacn/utools-quick-launcher/releases) 下载。
 
 ### 快速开始
 
